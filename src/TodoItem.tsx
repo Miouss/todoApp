@@ -12,19 +12,53 @@ interface TodoItemProps extends TodoItemType {
   setTodos: Dispatch<TodoItemAction>;
 }
 
-export function TodoItem({ id, title, isChecked, setTodos }: TodoItemProps) {
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
+export function TodoItem(props: TodoItemProps) {
+  const { id, isChecked, setTodos } = props;
 
-  const handleCheck = (id: string) => {
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleCheck = () => {
     setTodos({ type: TodoItemActionType.CHECK, payload: { id } });
   };
 
-  const handleDelete = (id: string) => {
-    setTodos({ type: TodoItemActionType.DELETE, payload: { id } });
-  };
+  return (
+    <ItemWrapper>
+      <CheckBox
+        type="checkbox"
+        checked={isChecked}
+        onClick={handleCheck}
+        readOnly
+      />
+      <Item
+        {...props}
+        isUpdating={isUpdating}
+        setIsUpdating={setIsUpdating}
+        handleCheck={handleCheck}
+      />
+      <UpdateButton onClick={() => setIsUpdating(true)}>?</UpdateButton>
+    </ItemWrapper>
+  );
+}
 
-  const handleUpdate = (e: any, id: string) => {
+interface ItemProps extends TodoItemProps {
+  isUpdating: boolean;
+  setIsUpdating: Dispatch<boolean>;
+  handleCheck: (id: string) => void;
+}
+
+function Item({
+  id,
+  title,
+  nb,
+  isUpdating,
+  isChecked,
+  setTodos,
+  setIsUpdating,
+  handleCheck,
+}: ItemProps) {
+  const [isHovering, setIsHovering] = useState(false);
+
+  const handleUpdate = (e: any) => {
     if (e.key !== "Enter") return;
 
     setTodos({
@@ -34,27 +68,29 @@ export function TodoItem({ id, title, isChecked, setTodos }: TodoItemProps) {
     setIsUpdating(false);
   };
 
-  return (
-    <ItemWrapper>
-      <CheckBox type="checkbox" checked={isChecked} readOnly />
+  const handleDelete = () => {
+    setTodos({ type: TodoItemActionType.DELETE, payload: { id } });
+  };
 
-      <Item
-        onClick={() => !isUpdating && handleCheck(id)}
-        checked={isChecked}
-        onMouseOver={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
-      >
-        {isUpdating ? (
-          <Input autoFocus type="text" onKeyDown={(e) => handleUpdate(e, id)} />
-        ) : (
-          <Title>{title}</Title>
-        )}
-        {isHovering && !isUpdating && (
-          <DeleteButton onClick={() => handleDelete(id)}>X</DeleteButton>
-        )}
-      </Item>
-      <UpdateButton onClick={() => setIsUpdating(true)}>?</UpdateButton>
-    </ItemWrapper>
+  const hasMultiple = nb > 1;
+
+  return (
+    <FlexCol
+      onClick={() => !isUpdating && handleCheck(id)}
+      onMouseOver={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
+      {isUpdating ? (
+        <Input autoFocus type="text" onKeyDown={handleUpdate} />
+      ) : (
+        <Title checked={isChecked}>
+          {title} {hasMultiple && `x${nb}`}
+        </Title>
+      )}
+      {isHovering && !isUpdating && (
+        <DeleteButton onClick={handleDelete}>X</DeleteButton>
+      )}
+    </FlexCol>
   );
 }
 
@@ -64,21 +100,21 @@ const ItemWrapper = styled.div`
   gap: 10px;
 `;
 
-const Item = styled.div<{ checked?: boolean }>`
+const FlexCol = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
   font-weight: bold;
   font-size: 2rem;
   cursor: pointer;
+`;
+
+const Title = styled.span<{ checked?: boolean }>`
+  margin-left: 10px;
   text-decoration: ${({ checked }) => (checked ? "line-through" : "none")};
 `;
 
-const Title = styled("span")`
-  margin-left: 10px;
-`;
-
-const Input = styled("input")`
+const Input = styled.input`
   width: 100%;
   height: 100%;
 `;

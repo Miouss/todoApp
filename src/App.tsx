@@ -7,11 +7,15 @@ export interface TodoItemType {
   id: string;
   title: string;
   isChecked?: boolean;
+  nb: number;
 }
 
 export interface TodoItemAction {
   type: TodoItemActionType;
-  payload?: any;
+  payload?: {
+    id?: string;
+    title?: string;
+  };
 }
 
 export enum TodoItemActionType {
@@ -71,17 +75,36 @@ function reducer(todos: TodoItemType[], action: TodoItemAction) {
 
   switch (action.type) {
     case ADD:
-      const { title } = action.payload;
-      return saveTodos([
-        ...todos,
-        {
-          id: uuidv4(),
-          title,
-          isChecked: false,
-        },
-      ]);
+      const title = action.payload!.title!;
+
+      const isTodoAlreadyExists = todos.some(
+        (todo) => todo.title.toLowerCase() === title.toLowerCase()
+      );
+
+      let newTodos;
+
+      if (isTodoAlreadyExists) {
+        newTodos = todos.map((todo) => {
+          if (todo.title.toLowerCase() === title.toLowerCase()) {
+            return { ...todo, nb: todo.nb + 1 };
+          }
+          return todo;
+        });
+      } else {
+        newTodos = [
+          ...todos,
+          {
+            id: uuidv4(),
+            title,
+            isChecked: false,
+            nb: 1,
+          },
+        ];
+      }
+
+      return saveTodos(newTodos);
     case CHECK:
-      const { id: checkedId } = action.payload;
+      const checkedId = action.payload!.id!;
 
       const updatedTodos = todos.map((todo) => {
         if (todo.id === checkedId) {
@@ -92,7 +115,8 @@ function reducer(todos: TodoItemType[], action: TodoItemAction) {
 
       return saveTodos(reorderTodos(updatedTodos));
     case UPDATE: {
-      const { id: modifiedId, title: newTitle } = action.payload;
+      const newTitle = action.payload!.title!;
+      const modifiedId = action.payload!.id!;
 
       const updatedTodos = todos.map((todo) => {
         const isModifiedTodo = todo.id === modifiedId;
@@ -107,7 +131,7 @@ function reducer(todos: TodoItemType[], action: TodoItemAction) {
       return saveTodos(updatedTodos);
     }
     case DELETE:
-      const { id: deletedId } = action.payload;
+      const deletedId = action.payload!.id!;
 
       todos.find((todo, i) => {
         const isModifiedTodo = todo.id === deletedId;
@@ -165,8 +189,10 @@ const Button = styled("button")`
 
 export const DeleteButton = styled(Button)`
   background-color: red;
+
   &:hover {
     background-color: darkred;
+    text-decoration: none !important;
   }
 `;
 
