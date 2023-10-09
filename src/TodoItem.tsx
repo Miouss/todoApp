@@ -1,16 +1,24 @@
 import { Dispatch, useState } from "react";
-import {
-  TodoItemAction,
-  TodoItemType,
-  TodoItemActionType,
-  UpdateButton,
-  DeleteButton,
-} from "./App";
+import { TodoItemAction, TodoItemType, TodoItemActionType } from "./App";
+
+import { BaseButton, DeleteButton } from "./styled";
 import styled from "styled-components";
 
 interface TodoItemProps extends TodoItemType {
   setTodos: Dispatch<TodoItemAction>;
 }
+
+const UpdateButton = styled.button`
+  ${BaseButton}
+  flex: 1;
+
+  font-size: 1.3rem;
+  background-color: green;
+
+  &:hover {
+    background-color: darkgreen;
+  }
+`;
 
 export function TodoItem(props: TodoItemProps) {
   const { id, isChecked, setTodos } = props;
@@ -35,7 +43,7 @@ export function TodoItem(props: TodoItemProps) {
         setIsUpdating={setIsUpdating}
         handleCheck={handleCheck}
       />
-      <UpdateButton onClick={() => setIsUpdating(true)}>?</UpdateButton>
+      <UpdateButton onClick={() => setIsUpdating(true)}>🖍</UpdateButton>
     </ItemWrapper>
   );
 }
@@ -94,13 +102,13 @@ function Item({
   );
 }
 
-const ItemWrapper = styled.div`
+const ItemWrapper = styled("div")`
   display: flex;
   align-items: center;
   gap: 10px;
 `;
 
-const FlexCol = styled.div`
+const FlexCol = styled("div")`
   display: flex;
   align-items: center;
   gap: 10px;
@@ -109,12 +117,12 @@ const FlexCol = styled.div`
   cursor: pointer;
 `;
 
-const Title = styled.span<{ checked?: boolean }>`
+const Title = styled("span")<{ checked?: boolean }>`
   margin-left: 10px;
   text-decoration: ${({ checked }) => (checked ? "line-through" : "none")};
 `;
 
-const Input = styled.input`
+const Input = styled("input")`
   width: 100%;
   height: 100%;
 `;

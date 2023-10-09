@@ -1,7 +1,7 @@
 import { useReducer } from "react";
-import styled from "styled-components";
 import { v4 as uuidv4 } from "uuid";
-import { TodoItem } from "./TodoItem";
+import { TodoList } from "./TodoList";
+import { TodoSearchBar } from "./TodoSearchBar";
 
 export interface TodoItemType {
   id: string;
@@ -29,33 +29,10 @@ export enum TodoItemActionType {
 export function App() {
   const [todos, setTodos] = useReducer(reducer, getSavedTodos());
 
-  const handleAdd = (e: any) => {
-    if (e.key === "Enter") {
-      setTodos({
-        type: TodoItemActionType.ADD,
-        payload: { title: e.target.value },
-      });
-    }
-  };
-
-  const todosItems = todos.map((todo) => (
-    <TodoItem key={todo.id} {...todo} setTodos={setTodos} />
-  ));
-
-  const handleDelTodos = () => {
-    const choice = confirm("Are you sure you want to delete all todos ?");
-    choice && setTodos({ type: TodoItemActionType.DELETE_ALL });
-  };
-
-  const hasTodos = todos.length > 0;
-
   return (
     <>
-      <BarWrapper>
-        <AddBar onKeyDown={handleAdd} />
-        {hasTodos && <DeleteButton onClick={handleDelTodos}>X</DeleteButton>}
-      </BarWrapper>
-      <List>{todosItems}</List>
+      <TodoSearchBar todos={todos} setTodos={setTodos} />
+      <TodoList todos={todos} setTodos={setTodos} />
     </>
   );
 }
@@ -158,47 +135,3 @@ function getSavedTodos(): TodoItemType[] {
   const savedTodos = localStorage.getItem("todos");
   return savedTodos ? JSON.parse(savedTodos) : [];
 }
-
-const List = styled("div")`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-
-  margin-left: 20%;
-`;
-
-const BarWrapper = styled("div")`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-
-const AddBar = styled("input")`
-  border: 1px solid black;
-  border-radius: 5px;
-  padding: 5px;
-`;
-
-const Button = styled("button")`
-  color: white;
-  border: none;
-  width: 30px;
-  height: 30px;
-  cursor: pointer;
-`;
-
-export const DeleteButton = styled(Button)`
-  background-color: red;
-
-  &:hover {
-    background-color: darkred;
-    text-decoration: none !important;
-  }
-`;
-
-export const UpdateButton = styled(Button)`
-  background-color: green;
-  &:hover {
-    background-color: darkgreen;
-  }
-`;
